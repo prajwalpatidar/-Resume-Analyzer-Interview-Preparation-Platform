@@ -1,0 +1,19 @@
+@use './style/button.scss';
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body, 
+#root {
+    width: 100%;
+    background-color: rgb(29, 28, 28) ;
+    color: whitesmoke;
+}
+
+.highlight{
+    color: #d20d3b;
+}

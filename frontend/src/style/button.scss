@@ -1,0 +1,40 @@
+.button{
+
+     border: none;
+     outline: none;
+     padding-inline: 1.5rem;
+     padding-block: 0.75rem;
+     border-radius: 1rem; 
+     cursor: pointer;
+     transition: all 0.3s ease-in-out;
+     font-size: 1rem;
+     font-weight: 500;
+
+     &:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+     }
+
+     &:active {
+        transform: scale(0.95);
+     }
+
+     &:focus {
+        outline: 2px solid rgba(255, 255, 255, 0.5);
+        outline-offset: 2px;
+     }
+
+     &.primary-button{
+        background-color: rgb(215, 11, 59);
+        color: white;
+     }
+
+     &.primary-button:hover {
+        background-color: rgb(180, 8, 48);
+     }
+
+     &.active{
+        transform: scale(0.95);
+     }
+
+}
