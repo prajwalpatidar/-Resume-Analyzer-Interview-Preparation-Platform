@@ -6,54 +6,46 @@ const api = axios.create({
 })
 
 export async function register({ username, email, password }) {
-
-    try{
-    const response = await api.post('/api/auth/register', {
-        username, email, password
-    }, )
-
-    return response.data
-} catch (err) {
-    console.log(err)
+    try {
+        const response = await api.post('/api/auth/register', {
+            username, email, password
+        })
+        return response.data
+    } catch (err) {
+        const message = err.response?.data?.message || "Registration failed"
+        throw new Error(message)
     }
 }
- 
+
 export async function login({ email, password}){
-
-    try{
-
+    try {
         const response = await api.post("/api/auth/login", {
-          email, password  
+            email, password  
         })
-
         return response.data
-
-    }catch(err){
-        console.log(err)
+    } catch (err) {
+        const message = err.response?.data?.message || "Login failed"
+        throw new Error(message)
     }
 }
 
 export async function logout() {
-    try{
-
+    try {
         const response = await api.get("/api/auth/logout")
-
         return response.data
     } catch (err) {
-        console.log(err)
-
+        const message = err.response?.data?.message || "Logout failed"
+        throw new Error(message)
     }
 }
 
 export async function getMe(){
-
-    try{
+    try {
         const response = await api.get("/api/auth/get-me")
-
         return response.data
-
-    } catch(err){
-        console.log(err)
+    } catch (err) {
+        const message = err.response?.data?.message || "Failed to fetch user"
+        throw new Error(message)
     }
 }
 

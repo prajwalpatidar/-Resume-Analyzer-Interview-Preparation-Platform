@@ -93,8 +93,7 @@ const resumePdfSchema = {
 
 async function callGemini({ contents, config }) {
     // List of candidate models in preference order.
-    // gemini-3.5-flash is currently highly active, available, and has quota.
-    const models = ["gemini-3.5-flash", "gemini-2.5-flash", "gemini-2.0-flash"];
+    const models = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-flash-latest"];
     let lastError = null;
 
     for (const model of models) {
@@ -180,7 +179,8 @@ Ensure all fields are populated with meaningful, specific, and actionable conten
 
 async function generatePdfFromHtml(htmlContent) {
     const browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
     })
     try {
         const page = await browser.newPage();

@@ -45,7 +45,13 @@ async function registerUserController(req, res){
         { expiresIn: "1d" }
     )
 
-    res.cookie("token", token)
+    const cookieOptions = {
+        httpOnly: true,
+        sameSite: "lax",
+        maxAge: 24 * 60 * 60 * 1000
+    }
+
+    res.cookie("token", token, cookieOptions)
 
     res.status(201).json({
         message: "User registered successfully",
@@ -68,11 +74,17 @@ async function registerUserController(req, res){
 async function loginUserController(req, res){
     const { email, password} = req.body
 
+    if (!email || !password) {
+        return res.status(400).json({
+            message: "Please provide email and password"
+        })
+    }
+
     const user = await userModel.findOne({ email })
 
     if (!user) {
         return res.status(400).json({
-            message: "invalid email or password"
+            message: "Invalid email or password"
         })
     }
 
@@ -80,7 +92,7 @@ async function loginUserController(req, res){
 
     if (!isPasswordValid){
         return  res.status(400).json({
-            message: "invalid email or password"
+            message: "Invalid email or password"
         })
     }
      const token = jwt.sign(
@@ -89,15 +101,21 @@ async function loginUserController(req, res){
         { expiresIn: "1d" }
     )
 
-    res.cookie("token", token)
+    const cookieOptions = {
+        httpOnly: true,
+        sameSite: "lax",
+        maxAge: 24 * 60 * 60 * 1000
+    }
+
+    res.cookie("token", token, cookieOptions)
 
     res.status(200).json({
-        message: "user logged in successfully",
+        message: "User logged in successfully",
         token,
         user:{
-        id: user._id,
-        username: user.username,
-        email: user.email
+            id: user._id,
+            username: user.username,
+            email: user.email
         }
     })
 
@@ -111,7 +129,7 @@ async function loginUserController(req, res){
  * @access Public
  */
 async function logoutUserController(req, res){
-    const token = req.cookies.token
+    const token = req.cookies?.token || req.headers.authorization?.split(" ")[1]
 
     if(token){
         await tokenBlacklistModel.create({ token })
@@ -120,7 +138,7 @@ async function logoutUserController(req, res){
     res.clearCookie("token")
 
     res.status(200).json({
-        message: "user logged out successfully"
+        message: "User logged out successfully"
     })
 
 }

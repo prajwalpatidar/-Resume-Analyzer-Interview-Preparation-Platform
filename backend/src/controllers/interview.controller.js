@@ -1,11 +1,31 @@
-const pdfParse = require("pdf-parse")
+const mammoth = require("mammoth")
 const { generateInterviewReport, generateResumePdf } = require("../services/ai.service")
 const interviewReportModel = require("../models/interviewReport.model")
+
+async function parsePdfBuffer(buffer) {
+    const pdfParse = require("pdf-parse")
+    if (typeof pdfParse === "function") {
+        const parsed = await pdfParse(buffer)
+        return parsed.text || ""
+    } else if (pdfParse && typeof pdfParse.PDFParse === "function") {
+        const parser = new pdfParse.PDFParse({ data: buffer })
+        const parsed = await parser.getText()
+        return parsed.text || ""
+    } else if (pdfParse && typeof pdfParse.default === "function") {
+        const parsed = await pdfParse.default(buffer)
+        return parsed.text || ""
+    } else if (pdfParse && typeof pdfParse.default?.PDFParse === "function") {
+        const parser = new pdfParse.default.PDFParse({ data: buffer })
+        const parsed = await parser.getText()
+        return parsed.text || ""
+    }
+    throw new Error("Unsupported pdf-parse module format")
+}
 
 async function generateInterViewReportController(req, res){
     const { selfDescription, jobDescription } = req.body
 
-    if (!jobDescription) {
+    if (!jobDescription || !jobDescription.trim()) {
         return res.status(400).json({
             message: "Job description is required."
         })
@@ -13,13 +33,29 @@ async function generateInterViewReportController(req, res){
 
     let resumeText = ""
     if (req.file) {
+        const originalName = req.file.originalname?.toLowerCase() || ""
+        const mimeType = req.file.mimetype || ""
+
         try {
-            const parsed = await pdfParse(req.file.buffer)
-            resumeText = parsed.text || ""
+            if (originalName.endsWith(".docx") || mimeType.includes("wordprocessingml")) {
+                const result = await mammoth.extractRawText({ buffer: req.file.buffer })
+                resumeText = result.value || ""
+            } else if (originalName.endsWith(".pdf") || mimeType.includes("pdf")) {
+                resumeText = await parsePdfBuffer(req.file.buffer)
+            } else if (originalName.endsWith(".txt") || mimeType.includes("text")) {
+                resumeText = req.file.buffer.toString("utf-8")
+            } else {
+                // Fallback attempt with pdfParse
+                try {
+                    resumeText = await parsePdfBuffer(req.file.buffer)
+                } catch (e) {
+                    resumeText = req.file.buffer.toString("utf-8")
+                }
+            }
         } catch (err) {
-            console.error("Error parsing PDF resume:", err)
+            console.error("Error parsing resume file:", err)
             return res.status(400).json({
-                message: "Failed to parse PDF resume."
+                message: "Failed to parse resume file. Please upload a valid PDF or DOCX file."
             })
         }
     }
